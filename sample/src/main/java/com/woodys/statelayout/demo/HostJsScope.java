@@ -16,6 +16,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.support.v4.app.ActivityCompat;
 import android.telephony.TelephonyManager;
 import android.webkit.WebView;
 import android.widget.Toast;
@@ -99,6 +100,9 @@ public class HostJsScope {
      * @return 设备IMSI
      * */
     public static String getIMSI(WebView webView) {
+        if (ActivityCompat.checkSelfPermission(webView.getContext(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            return null;
+        }
         return ((TelephonyManager) webView.getContext().getSystemService(Context.TELEPHONY_SERVICE)).getSubscriberId();
     }
 
@@ -254,4 +258,23 @@ public class HostJsScope {
         alert(webView, String.valueOf(msg));
     }
 
+
+    /**
+     * 设置webview的userAgent
+     *
+     * @param webView 浏览器
+     * @param json   传入的JSON对象
+     * @return 返回对象的第一个键值对
+     */
+    public static void webViewAuthSetUserAgent(WebView webView, JSONObject json) {
+        String msg = passJson2Java(webView,json);
+        alert(webView, String.valueOf(msg));
+        try {
+            // 修改ua使得web端正确判断
+            String ua = webView.getSettings().getUserAgentString();
+            webView.getSettings().setUserAgentString(json.getString("userAgent"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 }
